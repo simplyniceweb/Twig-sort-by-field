@@ -3,6 +3,8 @@
 namespace Snilius\Twig;
 
 use Exception;
+use Twig\TwigFilter;
+use Twig\Extension\AbstractExtension;
 
 /**
  * User: Victor Häggqvist
@@ -13,7 +15,7 @@ use Exception;
  *
  * I have extended it to also sort array structures
  */
-class SortByFieldExtension extends \Twig_Extension {
+class SortByFieldExtension extends AbstractExtension {
 
     public function getName() {
         return 'sortbyfield';
@@ -21,7 +23,7 @@ class SortByFieldExtension extends \Twig_Extension {
 
     public function getFilters() {
         return array(
-            new \Twig_SimpleFilter('sortbyfield', array($this, 'sortByFieldFilter'))
+            new TwigFilter('sortbyfield', array($this, 'sortByFieldFilter'))
         );
     }
 
@@ -50,6 +52,12 @@ class SortByFieldExtension extends \Twig_Extension {
             // usort(): Array was modified by the user comparison function
             @usort($content, function ($a, $b) use ($sort_by, $direction) {
                 $flip = ($direction === 'desc') ? -1 : 1;
+
+                // added by jaylord ferrer
+                // for those users with underscore/private fields
+                if (strpos($sort_by, '_') !== false) {
+                    $sort_by = str_replace(" ", "", ucfirst(str_replace("_", " ", $sort_by)));
+                }
 
                 if (is_array($a))
                     $a_sort_value = $a[$sort_by];
